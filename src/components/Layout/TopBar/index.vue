@@ -114,10 +114,6 @@
                     <i class="menu-icon iconfont-sys" style="font-size: 15px">&#xe828;</i>
                     <span class="menu-txt">使用文档</span>
                   </li>
-                  <li @click="toGithub()">
-                    <i class="menu-icon iconfont-sys">&#xe8d6;</i>
-                    <span class="menu-txt">Github</span>
-                  </li>
                   <li @click="loginOut">
                     <i class="menu-icon iconfont-sys">&#xe780;</i>
                     <span class="menu-txt">退出登录</span>

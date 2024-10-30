@@ -164,15 +164,6 @@ export const roleRoutes: AppRouteRecordRaw[] = [
         }
       },
       {
-        path: '/user/department',
-        name: 'Department',
-        component: () => import('@views/user/Department.vue'),
-        meta: {
-          title: '部门管理',
-          keepAlive: true
-        }
-      },
-      {
         path: '/user/role',
         name: 'Role',
         component: () => import('@views/user/Role.vue'),
@@ -394,32 +385,6 @@ export const roleRoutes: AppRouteRecordRaw[] = [
           title: '图标选择器',
           keepAlive: true
         }
-      },
-      {
-        path: '/widgets/notification',
-        component: () => import('@views/widgets/Notification.vue'),
-        meta: {
-          title: '通知',
-          keepAlive: true
-        }
-      }
-    ]
-  },
-  {
-    path: '/message',
-    component: Home,
-    name: 'Message',
-    meta: {
-      title: '消息中心'
-    },
-    children: [
-      {
-        path: '/message/message',
-        component: () => import('@views/message/Index.vue'),
-        meta: {
-          title: '系统消息',
-          keepAlive: true
-        }
       }
     ]
   },
@@ -437,14 +402,6 @@ export const roleRoutes: AppRouteRecordRaw[] = [
         meta: {
           title: '系统设置',
           keepAlive: true
-        }
-      },
-      {
-        path: '/system/api',
-        name: 'Api',
-        component: () => import('@views/system/Api.vue'),
-        meta: {
-          title: 'API管理'
         }
       },
       {
@@ -470,24 +427,6 @@ export const roleRoutes: AppRouteRecordRaw[] = [
         component: () => import('@views/safeguard/Server.vue'),
         meta: {
           title: '服务器管理',
-          keepAlive: true
-        }
-      }
-    ]
-  },
-  {
-    path: '/plan',
-    component: Home,
-    name: 'Plan',
-    meta: {
-      title: '版本计划'
-    },
-    children: [
-      {
-        path: '/plan/index',
-        component: () => import('@views/plan/index.vue'),
-        meta: {
-          title: '更新计划',
           keepAlive: true
         }
       }

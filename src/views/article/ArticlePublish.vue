@@ -1,7 +1,6 @@
 <template>
   <div class="page-content">
     <div class="article-edit">
-      <div>
         <div class="editor-wrap">
           <!-- 文章标题、类型 -->
           <el-row :gutter="10">
@@ -21,8 +20,8 @@
           </el-row>
 
           <!-- 富文本编辑器 -->
-          <editor class="el-top" v-model="editorHtml"></editor>
-
+<!--          <editor class="el-top" v-model="editorHtml"></editor>-->
+          <MdEditor class="el-top" v-model="editorHtml" previewTheme="smart-blue" codeTheme="kimbie"/>
           <!-- 图片上传 -->
           <div class="el-top">
             <el-upload
@@ -46,7 +45,6 @@
             {{ pageMode === PageModeEnum.Edit ? '保存' : '发布' }}
           </el-button>
         </div>
-      </div>
 
       <!-- <div class="outline-wrap">
         <div class="item" v-for="(item, index) in outlineList" :key="index">
@@ -66,6 +64,9 @@
   import EmojiText from '@/utils/emojo'
   import { PageModeEnum } from '@/enums/formEnum'
   import axios from 'axios'
+
+  import { MdEditor } from 'md-editor-v3';
+  import 'md-editor-v3/lib/style.css';
 
   const route = useRoute()
   const router = useRouter()
@@ -302,7 +303,7 @@
       width: 100%;
 
       .editor-wrap {
-        max-width: 800px;
+        width: 100%;
 
         .el-top {
           margin-top: 10px;

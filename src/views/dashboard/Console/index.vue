@@ -31,14 +31,6 @@
             <span>文档</span>
             <i class="iconfont">&#xe7e7;</i>
           </div>
-          <div class="btn" @click="goPage('https://github.com/Daymychen')">
-            <span>Github</span>
-            <i class="iconfont">&#xe7e7;</i>
-          </div>
-          <div class="btn" @click="goPage('https://www.lingchen.kim')">
-            <span>博客</span>
-            <i class="iconfont">&#xe7e7;</i>
-          </div>
         </div>
       </div>
       <img class="right-img" src="@imgs/draw/draw1.png" />

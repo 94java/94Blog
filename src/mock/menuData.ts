@@ -129,12 +129,6 @@ export const menuData: MenuListType[] = [
         path: '/user/account'
       },
       {
-        id: 303,
-        title: '部门管理',
-        title_en: 'Department manguage',
-        path: '/user/department'
-      },
-      {
         id: 304,
         title: '角色权限',
         title_en: 'Roles',
@@ -314,12 +308,6 @@ export const menuData: MenuListType[] = [
     name: 'Widgets',
     children: [
       {
-        id: 501,
-        title: '组件总览',
-        title_en: 'Element UI',
-        path: 'https://element-plus.org/zh-CN/component/overview.html'
-      },
-      {
         id: 503,
         title: 'Icon 图标',
         title_en: 'Icon',
@@ -330,28 +318,6 @@ export const menuData: MenuListType[] = [
         title: '图标选择器',
         title_en: 'Icon selector',
         path: '/widgets/icon-selector'
-      },
-      {
-        id: 505,
-        title: '通知',
-        title_en: 'Notification',
-        path: '/widgets/notification'
-      }
-    ]
-  },
-  {
-    id: 7,
-    title: '消息中心',
-    title_en: 'Message center',
-    icon: '\ue6e9',
-    path: '/message',
-    name: 'Message',
-    children: [
-      {
-        id: 701,
-        title: '系统消息',
-        title_en: 'System message',
-        path: '/message/message'
       }
     ]
   },
@@ -398,12 +364,6 @@ export const menuData: MenuListType[] = [
         path: '/system/setting'
       },
       {
-        id: 902,
-        title: 'API管理',
-        title_en: 'API manguage',
-        path: '/system/api'
-      },
-      {
         id: 903,
         title: '系统日志',
         title_en: 'System log',
@@ -424,38 +384,6 @@ export const menuData: MenuListType[] = [
         title: '服务器管理',
         title_en: 'Server manguage',
         path: '/safeguard/server'
-      }
-    ]
-  },
-  {
-    id: 11,
-    title: '版本计划',
-    title_en: 'Version Plan',
-    icon: '\ue712',
-    path: '/plan',
-    name: 'Plan',
-    children: [
-      {
-        id: 1110,
-        title: '更新计划',
-        title_en: 'Update Plan',
-        path: '/plan/index'
-      }
-    ]
-  },
-  {
-    id: 11,
-    title: '帮助中心',
-    title_en: 'Help center',
-    name: '0',
-    icon: '\ue719',
-    path: '',
-    children: [
-      {
-        id: 1101,
-        title: '官方文档',
-        title_en: 'Document',
-        path: 'https://www.lingchen.kim/art-design-pro/docs/'
       }
     ]
   }
