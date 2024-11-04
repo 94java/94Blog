@@ -1,176 +1,191 @@
 <template>
   <div class="page-content">
-    <div class="article-edit">
-        <div class="editor-wrap">
-          <!-- 文章标题、类型 -->
-          <el-row :gutter="10">
-            <el-col :span="18">
-              <el-input v-model.trim="articleName" placeholder="文章标题" maxlength="100" />
-            </el-col>
-            <el-col :span="6">
-              <el-select v-model="articleType" placeholder="请选择文章类型" filterable>
-                <el-option
-                  v-for="item in articleTypes"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                />
-              </el-select>
-            </el-col>
-          </el-row>
+    <div class="editor-wrap">
+      <!-- 文章标题、类型 -->
+      <el-row :gutter="4">
+        <el-col :span="20">
+          <el-input v-model.trim="articleData.title" placeholder="文章标题" maxlength="100" />
+        </el-col>
+        <el-col :span="4">
+          <el-button type="primary" plain round style="margin-left: 16px">保存草稿</el-button>
+          <el-button type="primary" round style="margin-left: 8px">发布文章</el-button>
+          <el-button icon="Setting" style="margin-left: 8px" circle />
+        </el-col>
+      </el-row>
 
-          <!-- 富文本编辑器 -->
-<!--          <editor class="el-top" v-model="editorHtml"></editor>-->
-          <MdEditor class="el-top" v-model="editorHtml" previewTheme="smart-blue" codeTheme="kimbie"/>
-          <!-- 图片上传 -->
-          <div class="el-top">
-            <el-upload
-              class="upload-demo"
-              drag
-              :action="uploadImageUrl"
-              multiple
-              :headers="uploadHeaders"
-              :on-success="onSuccess"
-              :on-error="onError"
-            >
-              <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-              <div class="el-upload__text"> 将图片拖到此处或者 <em>点击上传</em> </div>
-              <template #tip>
-                <div class="el-upload__tip"> jpg/png files with a size less than 500kb </div>
-              </template>
-            </el-upload>
-          </div>
-
-          <el-button type="primary" class="el-top" @click="submit">
-            {{ pageMode === PageModeEnum.Edit ? '保存' : '发布' }}
-          </el-button>
-        </div>
-
-      <!-- <div class="outline-wrap">
-        <div class="item" v-for="(item, index) in outlineList" :key="index">
-          <p :class="`level${item.level}`">{{ item.text }}</p>
-        </div>
-      </div> -->
+      <!-- 富文本编辑器 -->
+      <!--          <editor class="el-top" v-model="editorHtml"></editor>-->
+      <MdEditor ref="editorRef" class="el-top" v-model="articleData.content" :previewTheme="editorProp.previewTheme"
+                :codeTheme="editorProp.codeTheme"
+                noUploadImg
+                :toolbars="editorProp.toolbars">
+        <template #defToolbars>
+          <ModalToolbar
+            :visible="editorProp.resource.visible"
+            :isFullscreen="editorProp.resource.modalFullscreen"
+            showAdjust
+            title="素材库"
+            modalTitle="素材库"
+            width="870px"
+            height="600px"
+            @onClick="editorProp.resource.visible = true"
+            @onClose="editorProp.resource.visible = false"
+            @onAdjust="editorProp.resource.modalFullscreen = !editorProp.resource.modalFullscreen"
+          >
+            <button @click="handler">上传图片</button>
+            <template #trigger>
+              <el-icon>
+                <Picture />
+              </el-icon>
+            </template>
+          </ModalToolbar>
+          <DropdownToolbar title="预览主题" :visible="editorProp.previewThemeSwitch.visible"
+                           :onChange="editorProp.previewThemeSwitch.onVisibleChange">
+            <template #overlay>
+              <div class="theme-switch">
+                <ol>
+                  <li
+                    class="theme-item"
+                    v-for="(theme, index) of editorProp.previewThemeSwitch.list"
+                    :key="index"
+                    @click="editorProp.previewThemeSwitch.themeChange(theme)"
+                    v-text="theme"
+                  ></li>
+                </ol>
+              </div>
+            </template>
+            <template #trigger>
+              <el-icon>
+                <DataAnalysis />
+              </el-icon>
+            </template>
+          </DropdownToolbar>
+          <DropdownToolbar title="代码主题" :visible="editorProp.codeThemeSwitch.visible"
+                           :onChange="editorProp.codeThemeSwitch.onVisibleChange">
+            <template #overlay>
+              <div class="theme-switch">
+                <ol>
+                  <li class="theme-item"
+                      v-for="(theme, index) of editorProp.codeThemeSwitch.list"
+                      :key="index"
+                      @click="editorProp.codeThemeSwitch.themeChange(theme)"
+                      v-text="theme"
+                  ></li>
+                </ol>
+              </div>
+            </template>
+            <template #trigger>
+              <el-icon>
+                <Monitor />
+              </el-icon>
+            </template>
+          </DropdownToolbar>
+        </template>
+      </MdEditor>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { UploadFilled } from '@element-plus/icons-vue'
-  import { ArticleService } from '@/api/articleApi'
-  import { ApiStatus } from '@/utils/http/status'
-  import { ElMessage } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
-  import EmojiText from '@/utils/emojo'
   import { PageModeEnum } from '@/enums/formEnum'
   import axios from 'axios'
 
-  import { MdEditor } from 'md-editor-v3';
-  import 'md-editor-v3/lib/style.css';
+  import { MdEditor, ModalToolbar, DropdownToolbar } from 'md-editor-v3'
+  import 'md-editor-v3/lib/style.css'
 
   const route = useRoute()
   const router = useRouter()
+  const editorRef = ref(null)
 
-  const userStore = useUserStore()
-  let { token } = userStore.info
+  const articleData = ref({
+    title: '',
+    content: '',
+    summary: ''
+  })
 
-  // 上传路径
-  const uploadImageUrl = `${import.meta.env.VITE_API_URL}/api/common/upload`
-  // 传递 token
-  const uploadHeaders = { Authorization: token }
+  const editorProp = ref({
+    toolbars: [
+      'bold',
+      'underline',
+      'italic',
+      '-',
+      'title',
+      'strikeThrough',
+      'sub',
+      'sup',
+      'quote',
+      'unorderedList',
+      'orderedList',
+      'task',
+      '-',
+      'codeRow',
+      'code',
+      'link',
+      0,
+      'table',
+      'mermaid',
+      'katex',
+      '-',
+      1,
+      2,
+      '=',
+      'pageFullscreen',
+      'fullscreen',
+      'preview',
+      'previewOnly',
+      'catalog'
+    ],
+    previewTheme: 'smart-blue',
+    codeTheme: 'vuepress',
+    resource: {
+      visible: false,
+      modalFullscreen: false
+    },
+    previewThemeSwitch: {
+      visible: false,
+      list: ['default', 'github', 'vuepress', 'mk-cute', 'smart-blue', 'cyanosis'],
+      onVisibleChange: () => {
+        editorProp.value.previewThemeSwitch.visible = !editorProp.value.previewThemeSwitch.visible
+      },
+      themeChange: (theme: string) => {
+        editorProp.value.previewTheme = theme
+      }
+    },
+    codeThemeSwitch: {
+      visible: false,
+      list: ['atom', 'a11y', 'github', 'gradient', 'kimbie', 'paraiso', 'qtcreator', 'stackoverflow'],
+      onVisibleChange: () => {
+        editorProp.value.codeThemeSwitch.visible = !editorProp.value.codeThemeSwitch.visible
+      },
+      themeChange: (theme: string) => {
+        editorProp.value.codeTheme = theme
+      }
+    }
+  })
 
   let pageMode: PageModeEnum = PageModeEnum.Add // 页面类型 新增 ｜ 编辑
-  const articleName = ref('') // 文章标题
-  const articleType = ref() // 文章类型
-  const articleTypes = ref() // 类型列表
-  const editorHtml = ref('') // 编辑器内容
-  const createDate = ref('') // 创建时间
-  const summary = ref('') // 摘要
-  const cover = ref('') // 图片
-  // const outlineList = ref()
 
   onMounted(() => {
     scrollToTop()
-    getArticleTypes()
     initPageMode()
   })
+
+  const handler = () => {
+    alert('自定义按钮')
+    // 此处添加素材库图片
+    editorRef.value?.execCommand('bold')
+  }
 
   // 初始化页面类型 新增 ｜ 编辑
   const initPageMode = () => {
     const { id } = route.query
     pageMode = id ? PageModeEnum.Edit : PageModeEnum.Add
     if (pageMode === PageModeEnum.Edit && id) {
-      initEditArticle(Number(id))
+      // 编辑
     } else {
-      initAddArticle()
+      // 新增
     }
   }
-
-  // 初始化编辑文章的逻辑
-  const initEditArticle = (id: number) => {
-    articleId = id
-    getArticleDetail()
-  }
-
-  // 初始化新增文章逻辑
-  const initAddArticle = () => {
-    createDate.value = formDate(useNow().value)
-  }
-
-  // 获取文章类型
-  const getArticleTypes = async () => {
-    try {
-      const response = await axios.get('https://www.qiniu.lingchen.kim/classify.json')
-      if (response.data.code === ApiStatus.success) {
-        articleTypes.value = response.data.data
-      }
-    } catch (error) {
-      console.error('Error fetching JSON data:', error)
-    }
-    // try {
-    //   const res = await ArticleService.getArticleTypes({})
-    //   if (res.code === ApiStatus.success) {
-    //     articleTypes.value = res.data
-    //   }
-    // } catch (err) { }
-  }
-
-  // 获取文章详情内容
-  let articleId: number = 0
-  const getArticleDetail = async () => {
-    const res = await axios.get('https://www.qiniu.lingchen.kim/blog_list.json')
-
-    if (res.data.code === ApiStatus.success) {
-      let { title, blog_class, html_content } = res.data.data
-      articleName.value = title
-      articleType.value = Number(blog_class)
-      editorHtml.value = html_content
-    }
-
-    // const res = await ArticleService.getArticleDetail(articleId)
-    // if (res.code === ApiStatus.success) {
-    //   let { title, blog_class, create_time, home_img, html_content } = res.data
-
-    //   articleName.value = title
-    //   articleType.value = Number(blog_class)
-    //   editorHtml.value = html_content
-    //   cover.value = home_img
-    //   createDate.value = formDate(create_time)
-
-    //   // getOutline(html_content)
-    // }
-  }
-
-  // const getOutline = (content: string) => {
-  //   const regex = /<h([1-3])>(.*?)<\/h\1>/g
-  //   const headings = []
-  //   let match
-
-  //   while ((match = regex.exec(content)) !== null) {
-  //     headings.push({ level: match[1], text: match[2] })
-  //   }
-  //   outlineList.value = headings
-  // }
 
   // 提交
   const submit = () => {
@@ -181,104 +196,19 @@
     }
   }
 
-  // 格式化日期
-  const formDate = (date: string | Date): string => {
-    return useDateFormat(date, 'YYYY-MM-DD').value
-  }
-
-  // 验证输入
-  const validateArticle = () => {
-    if (!articleName.value) {
-      ElMessage.error(`请输入文章标题`)
-      return false
-    }
-
-    if (!articleType.value) {
-      ElMessage.error(`请选择文章类型`)
-      return false
-    }
-
-    if (editorHtml.value === '<p><br></p>') {
-      ElMessage.error(`请输入文章内容`)
-      return false
-    }
-
-    if (!cover.value) {
-      ElMessage.error(`请上传图片`)
-      return false
-    }
-
-    return true
-  }
-
-  // 构建参数
-  const buildParams = () => {
-    return {
-      title: articleName.value,
-      html_content: editorHtml.value,
-      home_img: cover.value,
-      blog_class: articleType.value,
-      create_time: createDate.value,
-      brief: summary.value
-    }
-  }
-
   // 添加文章
   const addArticle = async () => {
-    try {
-      if (!validateArticle()) return
-
-      editorHtml.value = delCodeTrim(editorHtml.value)
-      getSummary()
-
-      const params = buildParams()
-      const res = await ArticleService.addArticle(params)
-
-      if (res.code === ApiStatus.success) {
-        ElMessage.success(`发布成功 ${EmojiText[200]}`)
-        goBack()
-      }
-    } catch (err) {
-      console.error(err)
-    }
+    // 新增文章
   }
 
   // 编辑文章
   const editArticle = async () => {
-    try {
-      if (!validateArticle()) return
-
-      editorHtml.value = delCodeTrim(editorHtml.value)
-      getSummary()
-
-      const params = buildParams()
-      const res = await ArticleService.editArticle(articleId, params)
-
-      if (res.code === ApiStatus.success) {
-        ElMessage.success(`修改成功 ${EmojiText[200]}`)
-        goBack()
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const delCodeTrim = (content: string): string => {
-    return content.replace(/(\s*)<\/code>/g, '</code>')
+    // 编辑文章
   }
 
   // 获取摘要
   const getSummary = (maxlength: number = 200) => {
-    summary.value = editorHtml.value.replace(/<[^>]+>/g, '').substring(0, maxlength)
-  }
-
-  const onSuccess = (response: any) => {
-    cover.value = response.data.url
-    ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
-  }
-
-  const onError = () => {
-    ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
+    articleData.value.summary = articleData.value.content.replace(/<[^>]+>/g, '').substring(0, maxlength)
   }
 
   // 返回上一页
@@ -289,44 +219,39 @@
   }
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0 })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
 </script>
 
 <style lang="scss" scoped>
   .page-content {
     height: 100%;
 
-    .article-edit {
-      display: flex;
-      justify-content: space-between;
+    .editor-wrap {
       width: 100%;
 
-      .editor-wrap {
-        width: 100%;
-
-        .el-top {
-          margin-top: 10px;
-        }
+      .el-top {
+        margin-top: 12px;
       }
 
-      .outline-wrap {
-        box-sizing: border-box;
-        width: 280px;
-        padding: 20px;
-        border: 1px solid #e3e3e3;
-        border-radius: 8px;
+      .md-editor {
+        height: 82vh;
 
-        .item {
-          p {
-            height: 30px;
-            font-size: 13px;
-            line-height: 30px;
-            cursor: pointer;
-          }
+        .theme-switch {
+          background-color: var(--md-bk-color);
+          border-radius: 3px;
+          border: 1px solid var(--md-border-color);
 
-          .level3 {
-            padding-left: 10px;
+          .theme-item {
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 5px;
+
+            &:hover {
+              background-color: var(--md-bk-hover-color);
+              cursor: pointer;
+            }
           }
         }
       }
